@@ -20,9 +20,11 @@
     "nodemon": "^3.1.14",
     "prisma": "^5.10.0",
     "ts-node": "^10.9.2",
+    "tsx": "^4.23.15",
     "typescript": "^7.0.2"
   },
   "scripts": {
-    "postinstall": "prisma skills sync || exit 0"
+    "postinstall": "prisma skills sync || exit 0",
+    "dev": "tsx watch server.ts"
   }
 }
