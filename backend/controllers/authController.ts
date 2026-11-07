@@ -29,7 +29,7 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
         name,
         email,
         password: hashedPassword,
-        role, // 'organizer' ya 'attendee'
+        role, 
       },
     });
 
