@@ -1,0 +1,44 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   // 'organizer' ya 'attendee'
+  events    Event[]  @relation("OrganizerEvents")
+  rsvps     RSVP[]
+  createdAt DateTime @default(now())
+}
+
+model Event {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String   @db.Text
+  date        String
+  time        String
+  venue       String
+  seatLimit   Int
+  organizerId Int
+  organizer   User     @relation("OrganizerEvents", fields: [organizerId], references: [id])
+  rsvps       RSVP[]
+  createdAt   DateTime @default(now())
+}
+
+model RSVP {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  eventId   Int
+  user      User     @relation(fields: [userId], references: [id])
+  event     Event    @relation(fields: [eventId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userId, eventId]) // Rule: Ek attendee ek event mein sirf ek baar register kar sakta hai
+}
