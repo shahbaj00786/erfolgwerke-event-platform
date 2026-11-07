@@ -68,3 +68,32 @@ export const getUserRsvps = async (req: AuthRequest, res: Response): Promise<voi
     res.json({ success: false, message: error.message });
   }
 };
+
+export const cancelRsvp = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params; 
+    const userId = req.user?.userId;
+
+    const rsvp = await prisma.rsvp.findUnique({ 
+      where: { id: Number(id) } 
+    });
+
+    if (!rsvp) {
+      res.json({ success: false, message: "RSVP not found" });
+      return;
+    }
+
+    if (rsvp.userId !== userId) {
+      res.json({ success: false, message: "Unauthorized to cancel this RSVP" });
+      return;
+    }
+
+    await prisma.rsvp.delete({
+      where: { id: Number(id) }
+    });
+
+    res.json({ success: true, message: "RSVP cancelled successfully" });
+  } catch (error: any) {
+    res.json({ success: false, message: error.message });
+  }
+};
