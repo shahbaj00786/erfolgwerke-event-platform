@@ -1,20 +1,14 @@
 import { Link } from 'react-router-dom';
 
 interface EventCardProps {
-  event: {
-    id: number;
-    title: string;
-    date: string;
-    venue: string;
-    seatLimit: number;
-    _count?: { rsvps: number };
-  };
+  event: any;
   userRole: string | null;
   onRsvp?: (id: number) => void;
+  onCancel?: (rsvpId: number) => void; 
 }
 
-export default function EventCard({ event, userRole, onRsvp }: EventCardProps) {
-  const rsvpCount = event._count?.rsvps || 0;
+export default function EventCard({ event, userRole, onRsvp, onCancel }: EventCardProps) {
+  const rsvpCount = event._count?.rsvps || event.rsvps?.length || 0;
   const isSoldOut = rsvpCount >= event.seatLimit;
 
   const formattedDate = new Date(event.date).toLocaleDateString(undefined, { 
@@ -24,31 +18,43 @@ export default function EventCard({ event, userRole, onRsvp }: EventCardProps) {
     day: 'numeric' 
   });
 
+  const CardInnerContent = (
+    <>
+      <h2 className={`text-xl font-bold text-gray-900 mb-4 transition-colors line-clamp-2 ${!onCancel ? 'group-hover:text-blue-600' : ''}`}>
+        {event.title}
+      </h2>
+      
+      <div className="space-y-3 mb-5">
+        <p className="text-sm text-gray-600 flex items-center">
+          <span className="mr-3 text-lg">📅</span> 
+          {formattedDate}
+        </p>
+        <p className="text-sm text-gray-600 flex items-center">
+          <span className="mr-3 text-lg">📍</span> 
+          {event.venue}
+        </p>
+      </div>
+      
+      <div className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700">
+        <span className="mr-1.5">🎟️</span>
+        {rsvpCount} / {event.seatLimit} Seats Booked
+      </div>
+    </>
+  );
+
   return (
     <div className="bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between h-full overflow-hidden">
       
-      <Link to={`/event/${event.id}`} className="p-6 block flex-grow cursor-pointer group">
-        <h2 className="text-xl font-bold text-gray-900 mb-4 group-hover:text-blue-600 transition-colors line-clamp-2">
-          {event.title}
-        </h2>
-        
-        <div className="space-y-3 mb-5">
-          <p className="text-sm text-gray-600 flex items-center">
-            <span className="mr-3 text-lg">📅</span> 
-            {formattedDate}
-          </p>
-          <p className="text-sm text-gray-600 flex items-center">
-            <span className="mr-3 text-lg">📍</span> 
-            {event.venue}
-          </p>
+      {onCancel ? (
+        <div className="p-6 block flex-grow">
+          {CardInnerContent}
         </div>
-        
-        <div className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700">
-          <span className="mr-1.5">🎟️</span>
-          {rsvpCount} / {event.seatLimit} Seats Booked
-        </div>
-      </Link>
-      
+      ) : (
+        <Link to={`/event/${event.id}`} className="p-6 block flex-grow cursor-pointer group">
+          {CardInnerContent}
+        </Link>
+      )}
+
       <div className="p-4 border-t border-gray-50 bg-gray-50/50">
         {userRole === 'ORGANIZER' ? (
           <Link 
@@ -57,9 +63,22 @@ export default function EventCard({ event, userRole, onRsvp }: EventCardProps) {
           >
             Manage Event
           </Link>
+        ) : onCancel ? (
+          <button
+            onClick={(e) => { 
+              e.preventDefault(); 
+              onCancel(event.rsvpId); 
+            }}
+            className="hover:cursor-pointer w-full py-2.5 text-sm font-bold rounded-xl transition-all duration-200 bg-red-50 text-red-600 hover:bg-red-100 hover:shadow-md active:scale-[0.98]"
+          >
+            Cancel Ticket
+          </button>
         ) : (
           <button
-            onClick={() => onRsvp && onRsvp(event.id)}
+            onClick={(e) => { 
+              e.preventDefault(); 
+              onRsvp && onRsvp(event.id); 
+            }}
             disabled={isSoldOut}
             className={`w-full py-2.5 text-sm font-bold rounded-xl transition-all duration-200 ${
               isSoldOut
