@@ -3,13 +3,15 @@ import { createEvent, getAllEvents, getEventById, getMyEvents, updateEvent, dele
 import { authUser } from '../middlewares/authUser';
 import { authOrganizer } from '../middlewares/authOrganizer';
 
+
 const eventRouter = Router();
 
 eventRouter.get('/', getAllEvents);
 eventRouter.post('/create', authUser, authOrganizer, createEvent);
 eventRouter.get('/my-events', authUser, authOrganizer, getMyEvents);
-eventRouter.put('/:id', authUser, authOrganizer, updateEvent);
+
+eventRouter.get('/:id', getEventById); 
+eventRouter.put('/:id', authUser, authOrganizer, updateEvent); 
 eventRouter.delete('/:id', authUser, authOrganizer, deleteEvent);
-eventRouter.get('/:id', getEventById);
 
 export default eventRouter;
