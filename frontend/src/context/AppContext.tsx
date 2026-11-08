@@ -1,45 +1,53 @@
-import { createContext, useState, ReactNode, useContext } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-// Context structure 
 interface AppContextType {
   token: string | null;
   userRole: string | null;
-  login: (newToken: string, role: string) => void;
+  user: any;
+  login: (token: string, role: string, userData?: any) => void;
   logout: () => void;
+  setUser: (user: any) => void;
 }
 
-export const AppContext = createContext<AppContextType | undefined>(undefined);
+const AppContext = createContext<AppContextType | undefined>(undefined);
 
-// Provider Component 
-export function AppProvider({ children }: { children: ReactNode }) {
+export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [userRole, setUserRole] = useState<string | null>(localStorage.getItem('role'));
+  const [user, setUser] = useState<any>(() => {
+    const savedUser = localStorage.getItem('user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
 
-  const login = (newToken: string, role: string) => {
-    localStorage.setItem('token', newToken);
-    localStorage.setItem('role', role);
+  const login = (newToken: string, role: string, userData?: any) => {
     setToken(newToken);
     setUserRole(role);
+    localStorage.setItem('token', newToken);
+    localStorage.setItem('role', role);
+    if (userData) {
+      setUser(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
+    }
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
     setToken(null);
     setUserRole(null);
+    setUser(null);
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    localStorage.removeItem('user');
   };
 
   return (
-    <AppContext.Provider value={{ token, userRole, login, logout }}>
+    <AppContext.Provider value={{ token, userRole, user, login, logout, setUser }}>
       {children}
     </AppContext.Provider>
   );
-}
+};
 
 export const useAppContext = () => {
   const context = useContext(AppContext);
-  if (!context) {
-    throw new Error("useAppContext must be used within an AppProvider");
-  }
+  if (!context) throw new Error('useAppContext must be used within an AppProvider');
   return context;
 };
