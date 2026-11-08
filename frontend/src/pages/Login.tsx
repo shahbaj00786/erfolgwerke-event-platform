@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import api from '../services/api';
+import { useAppContext } from '../context/AppContext';
 
 export default function Login() {
   const [isLogin, setIsLogin] = useState(true);
@@ -8,128 +9,133 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('ATTENDEE'); 
+
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login, setUser } = useAppContext(); 
+
+  useEffect(() => {
+    if (location.pathname === '/signup') {
+      setIsLogin(false);
+    } else {
+      setIsLogin(true);
+    }
+  }, [location.pathname]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      if (isLogin) {
-        const res = await axios.post('http://localhost:5000/api/auth/login', { 
-          email, 
-          password 
-        });
-        localStorage.setItem('token', res.data.token); 
-        localStorage.setItem('role', res.data.user?.role || res.data.role || 'ATTENDEE'); 
-        navigate('/'); 
+      const endpoint = isLogin ? '/auth/login' : '/auth/signup'; 
+      const payload = isLogin 
+        ? { email, password } 
+        : { name, email, password, role };
+
+      const response = await api.post(endpoint, payload);
+
+      if (response.data.success || response.data.token) {
+        login(response.data.token, response.data.role || role, response.data.user);
+        
+        if (response.data.user) {
+          setUser(response.data.user);
+        }
+
+        if ((response.data.role || role) === 'ORGANIZER') {
+          navigate('/dashboard');
+        } else {
+          navigate('/');
+        }
       } else {
-        await axios.post('http://localhost:5000/api/auth/signup', { 
-          name,
-          email, 
-          password,
-          role 
-        });
-        alert('Signup Successful! Please login to continue.');
-        setIsLogin(true); 
-        setPassword('');  
+        alert(response.data.message || 'Authentication failed');
       }
-    } catch (error) {
-      console.error(error);
-      alert(isLogin ? 'Login failed. Email ya password check karein.' : 'Signup failed. Please try again.');
+    } catch (error: any) {
+      alert('Error: ' + (error.response?.data?.message || error.message));
     }
   };
 
   return (
-    <div className="flex justify-center items-center mt-20 px-4">
-      <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 w-full max-w-sm">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
-          {isLogin ? 'Login' : 'Create an Account'}
-        </h2>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full bg-white p-8 sm:p-10 rounded-2xl shadow-xl border border-gray-100">
         
-        <form onSubmit={handleSubmit} className="space-y-4">
-          
-          {!isLogin && (
-            <>
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">Full Name</label>
-                <input 
-                  type="text" 
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                  value={name} 
-                  onChange={(e) => setName(e.target.value)} 
-                  required 
-                />
-              </div>
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-extrabold text-gray-900">
+            {isLogin ? 'Welcome Back' : 'Create an Account'}
+          </h2>
+          <p className="mt-2 text-sm text-gray-500">
+            {isLogin ? 'Please enter your details to sign in.' : 'Join us to discover and manage events.'}
+          </p>
+        </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-2">I am an:</label>
-                <div className="flex gap-6">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input 
-                      type="radio" 
-                      name="role"
-                      value="ATTENDEE" // Updated here
-                      checked={role === 'ATTENDEE'}
-                      onChange={(e) => setRole(e.target.value)}
-                      className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                    />
-                    <span className="text-sm text-gray-700">Attendee</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input 
-                      type="radio" 
-                      name="role"
-                      value="ORGANIZER"
-                      checked={role === 'ORGANIZER'}
-                      onChange={(e) => setRole(e.target.value)}
-                      className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                    />
-                    <span className="text-sm text-gray-700">Organizer</span>
-                  </label>
-                </div>
-              </div>
-            </>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {!isLogin && (
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">Full Name</label>
+              <input
+                type="text"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200"
+                placeholder="John Doe"
+              />
+            </div>
           )}
-          
+
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">Email</label>
-            <input 
-              type="email" 
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
-              value={email} 
-              onChange={(e) => setEmail(e.target.value)} 
-              required 
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email Address</label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200"
+              placeholder="you@example.com"
             />
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">Password</label>
-            <input 
-              type="password" 
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
-              value={password} 
-              onChange={(e) => setPassword(e.target.value)} 
-              required 
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Password</label>
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200"
+              placeholder="••••••••"
             />
           </div>
-          
-          <button 
-            type="submit" 
-            className="w-full bg-blue-600 text-white font-medium py-2.5 rounded-lg hover:bg-blue-700 transition-colors mt-2 hover:cursor-pointer">
-            {isLogin ? 'Login' : 'Sign Up'}
+
+          {!isLogin && (
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">I want to...</label>
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                className="hover:cursor-pointer w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 text-gray-700"
+              >
+                <option value="ATTENDEE">Attend Events</option>
+                <option value="ORGANIZER">Organize Events</option>
+              </select>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            className=" hover:cursor-pointer w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 hover:shadow-lg transition-all duration-200 active:scale-[0.98] mt-2"
+          >
+            {isLogin ? 'Sign In' : 'Sign Up'}
           </button>
         </form>
 
-        <div className="mt-6 text-center text-sm text-gray-600">
-          {isLogin ? "Don't have an account? " : "Already have an account? "}
-          <button 
-            type="button" 
-            onClick={() => {
-              setIsLogin(!isLogin);
-              setRole('ATTENDEE'); 
-            }} 
-            className="text-blue-600 font-medium hover:underline focus:outline-none hover:cursor-pointer">
-            {isLogin ? 'Sign up' : 'Login'}
-          </button>
+        <div className="mt-8 text-center">
+          <p className="text-sm text-gray-600">
+            {isLogin ? "Don't have an account? " : "Already have an account? "}
+            <button
+              onClick={() => setIsLogin(!isLogin)}
+              className="hover:cursor-pointer font-bold text-blue-600 hover:text-blue-700 hover:underline transition-colors"
+            >
+              {isLogin ? 'Sign up' : 'Login'}
+            </button>
+          </p>
         </div>
         
       </div>
