@@ -1,60 +1,83 @@
 import { Link, useNavigate } from 'react-router-dom';
+import { useAppContext } from '../context/AppContext';
 
 export default function Navbar() {
+  const { token, userRole, logout } = useAppContext();
   const navigate = useNavigate();
-  const token = localStorage.getItem('token');
-  const role = localStorage.getItem('role')?.toUpperCase(); 
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
+    logout();
     navigate('/login');
   };
 
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-100">
-      <div className="max-w-5xl mx-auto px-4">
+    <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <Link to="/" className="text-xl font-bold text-blue-600">
-            Erfolgwerke
-          </Link>
           
-          <div className="flex items-center space-x-6">
-            <Link to="/" className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors">
-              Events
+          <div className="flex items-center">
+            <Link to="/" className="flex items-center gap-2 group">
+              <span className="text-2xl group-hover:scale-110 transition-transform duration-200">🎟️</span>
+              <span className="text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-800 tracking-tight">
+                Erfolgwerke
+              </span>
             </Link>
-            
-            {token ? (
+          </div>
+
+          <div className="flex items-center gap-2 sm:gap-4">
+            {!token ? (
               <>
-                {role === 'ATTENDEE' && (
-                  <Link to="/my-rsvps" className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors">
-                    My RSVPs
+                <Link 
+                  to="/login" 
+                  className="px-4 py-2 text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors"
+                >
+                  Log In
+                </Link>
+                <Link 
+                  to="/signup" 
+                  className="px-4 py-2 text-sm font-bold bg-blue-600 text-white rounded-xl hover:bg-blue-700 hover:shadow-md transition-all duration-200 active:scale-95 hidden sm:block"
+                >
+                  Sign Up
+                </Link>
+              </>
+            ) : (
+              <>
+                {userRole === 'ORGANIZER' ? (
+                  <>
+                    <Link 
+                      to="/dashboard" 
+                      className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                    >
+                      Dashboard
+                    </Link>
+                    <Link 
+                      to="/organizer-data" 
+                      className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all hidden sm:block"
+                    >
+                      Analytics
+                    </Link>
+                  </>
+                ) : (
+                  <Link 
+                    to="/my-rsvps" 
+                    className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                  >
+                    My Tickets
                   </Link>
                 )}
                 
-                {role === 'ORGANIZER' && (
-                  <>
-                    <Link to="/dashboard" className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors">
-                      Dashboard
-                    </Link>
-                    <Link to="/create-event" className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors">
-                      Create Event
-                    </Link>
-                  </>
-                )}
-
+                <div className="h-6 w-px bg-gray-200 mx-1"></div> 
+                
                 <button 
-                  onClick={handleLogout} 
-                  className="text-sm font-medium text-red-600 hover:text-red-700 transition-colors">
+                  onClick={handleLogout}
+                  className="hover:cursor-pointer px-4 py-2 text-sm font-bold text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200"
+                >
                   Logout
                 </button>
               </>
-            ) : (
-              <Link to="/login" className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors">
-                Login / Sign Up
-              </Link>
             )}
           </div>
+
         </div>
       </div>
     </nav>
