@@ -8,6 +8,7 @@ interface EventFormProps {
 }
 
 export default function EventForm({ initialData, onSubmit, isLoading, buttonText }: EventFormProps) {
+  const today = new Date().toISOString().split('T')[0];
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -15,6 +16,7 @@ export default function EventForm({ initialData, onSubmit, isLoading, buttonText
     time: '',
     venue: '',
     seatLimit: ''
+
   });
 
   useEffect(() => {
@@ -35,7 +37,19 @@ export default function EventForm({ initialData, onSubmit, isLoading, buttonText
   };
 
   return (
-    <form onSubmit={(e) => { e.preventDefault(); onSubmit(formData); }} className="bg-white p-8 border border-gray-100 rounded-2xl shadow-xl space-y-6">
+    <form onSubmit={(e) => { 
+        e.preventDefault();
+        const selectedDate = new Date(formData.date);
+        const currentDate = new Date();
+        currentDate.setHours(0, 0, 0, 0);
+        if (selectedDate < currentDate) {
+          alert("Past dates are not allowed! Please select a valid future date.");
+          return;
+        }
+        onSubmit(formData); 
+     }} 
+     
+     className="bg-white p-8 border border-gray-100 rounded-2xl shadow-xl space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="md:col-span-2">
           <label className="block text-sm font-bold text-gray-700 mb-2">Event Title</label>
@@ -45,7 +59,7 @@ export default function EventForm({ initialData, onSubmit, isLoading, buttonText
 
         <div>
           <label className="block text-sm font-bold text-gray-700 mb-2">Date</label>
-          <input type="date" name="date" value={formData.date} onChange={handleChange} required
+          <input type="date" name="date" min={today} value={formData.date} onChange={handleChange} required
             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none" />
         </div>
 
