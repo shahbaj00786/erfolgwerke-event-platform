@@ -23,9 +23,13 @@
     "tsx": "^4.23.15",
     "typescript": "^7.0.2"
   },
+  "name": "backend",
+  "type": "module",
   "scripts": {
     "postinstall": "prisma skills sync || exit 0",
     "dev": "tsx watch server.ts",
-     "build": "tsc"
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "stage": "tsc && git status && git add ."
   }
 }
