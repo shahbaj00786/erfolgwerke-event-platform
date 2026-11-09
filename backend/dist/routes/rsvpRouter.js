@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const rsvpController_1 = require("../controllers/rsvpController");
+const authUser_1 = require("../middlewares/authUser");
+const rsvpRouter = (0, express_1.Router)();
+rsvpRouter.post('/create', authUser_1.authUser, rsvpController_1.createRsvp);
+rsvpRouter.get('/my-rsvps', authUser_1.authUser, rsvpController_1.getUserRsvps);
+rsvpRouter.delete('/:id', authUser_1.authUser, rsvpController_1.cancelRsvp);
+exports.default = rsvpRouter;
