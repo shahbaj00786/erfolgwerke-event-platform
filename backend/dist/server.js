@@ -14,6 +14,8 @@ const app = (0, express_1.default)();
 app.use((0, cors_1.default)({
     origin: [
         "http://localhost:5173",
+        "http://localhost:5174",
+        "https://erfolgwerke-event-platform-frontend.onrender.com",
         "https://erfolgwerke-event-platform-3.onrender.com"
     ],
     credentials: true,
