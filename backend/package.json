@@ -25,6 +25,7 @@
   },
   "scripts": {
     "postinstall": "prisma skills sync || exit 0",
-    "dev": "tsx watch server.ts"
+    "dev": "tsx watch server.ts",
+     "build": "tsc"
   }
 }
