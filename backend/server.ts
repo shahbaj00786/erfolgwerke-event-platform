@@ -14,6 +14,7 @@ app.use(cors({
     "http://localhost:5173",
     "http://localhost:5174", 
     "https://erfolgwerke-event-platform-frontend.onrender.com",
+    "https://erfolgwerke-event-platform-frontendside.onrender.com",
     "https://erfolgwerke-event-platform-3.onrender.com"
   ],
   credentials: true,
