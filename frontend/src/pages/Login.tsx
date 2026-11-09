@@ -32,15 +32,20 @@ export default function Login() {
 
       const response = await api.post(endpoint, payload);
 
-      if (response.data.success || response.data.token) {
-        login(response.data.token, response.data.role || role, response.data.user);
-        
-        if (response.data.user) {
-          setUser(response.data.user);
-        }
-
-        if ((response.data.role || role) === 'ORGANIZER') {
-          navigate('/dashboard');
+        if (response.data.success || response.data.token) {
+            const userRole = (response.data.user?.role || response.data.role || role).toUpperCase();
+          
+            login(response.data.token, userRole, response.data.user);
+            
+            if (response.data.user) {
+              setUser(response.data.user);
+            }
+          
+            if (userRole === 'ORGANIZER') {
+              navigate('/dashboard');
+            } else {
+              navigate('/');
+            }
         } else {
           navigate('/');
         }
