@@ -35,6 +35,7 @@ export const getAllEvents = async (_req: any, res: Response): Promise<void> => {
     const events = await prisma.event.findMany({
       include: {
         organizer: { select: { id: true, name: true, email: true } },
+        rsvps: true,
         _count: { select: { rsvps: true } }
       },
       orderBy: { createdAt: 'desc' }
@@ -49,7 +50,7 @@ export const getAllEvents = async (_req: any, res: Response): Promise<void> => {
 export const getEventById = async (req: any, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-
+    const userId = req.user?.id || req.userId; 
     const event = await prisma.event.findUnique({
       where: { id: Number(id) },
       include: {
@@ -62,8 +63,10 @@ export const getEventById = async (req: any, res: Response): Promise<void> => {
       res.json({ success: false, message: "Event not found" });
       return;
     }
-
-    res.json({ success: true, event });
+    const isRegistered = userId 
+      ? event.rsvps.some((r: any) => String(r.userId) === String(userId))
+      : false;
+    res.json({ success: true, event: { ...event, isRegistered } });
   } catch (error: any) {
     res.json({ success: false, message: error.message });
   }
@@ -99,14 +102,13 @@ export const updateEvent = async (req: AuthRequest, res: Response): Promise<void
       return;
     }
 
-    // Data ko Prisma ke hisaab se sahi format mein convert kar rahe hain
     const updatedEvent = await prisma.event.update({
       where: { id: Number(id) },
       data: {
         title: String(title),
-        date: new Date(date).toISOString(), // Date ko safe ISO string mein badla
+        date: new Date(date).toISOString(), 
         venue: String(venue),
-        seatLimit: parseInt(String(seatLimit)) || 0 // Number ko safe Integer mein badla
+        seatLimit: parseInt(String(seatLimit)) || 0 
       }
     });
 
@@ -129,16 +131,13 @@ export const deleteEvent = async (req: AuthRequest, res: Response): Promise<void
       return;
     }
 
-    // Yahan agar aapka model Rsvp hai, toh prisma.rsvp likhna hoga (chote aksharon mein)
-    // Agar RSVP hai toh prisma.rSVP. Pehle 'rsvp' try karte hain:
     try {
       await (prisma as any).rsvp.deleteMany({ where: { eventId: Number(id) } });
     } catch (e) {
-      // Agar rsvp nahi chala, toh rSVP try karega
+     
       await (prisma as any).rSVP.deleteMany({ where: { eventId: Number(id) } });
     }
     
-    // Phir main event delete karein
     await prisma.event.delete({ where: { id: Number(id) } });
 
     res.json({ success: true, message: "Event deleted successfully" });
