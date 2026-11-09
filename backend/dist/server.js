@@ -13,9 +13,12 @@ dotenv_1.default.config();
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)({
     origin: [
-        "http://localhost:5173"
+        "http://localhost:5173",
+        "https://erfolgwerke-event-platform-3.onrender.com"
     ],
-    credentials: true
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
 }));
 // Middlewares
 app.use(express_1.default.json());
