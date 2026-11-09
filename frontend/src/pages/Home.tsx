@@ -61,7 +61,7 @@ export default function Home() {
           <div className="flex gap-2">
             <button
               onClick={() => setFilterType('all')}
-              className={`px-5 py-3 rounded-xl font-bold text-sm transition-all ${
+              className={`hover:cursor-pointer px-5 py-3 rounded-xl font-bold text-sm transition-all ${
                 filterType === 'all'
                   ? 'bg-blue-600 text-white shadow-sm'
                   : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
@@ -71,7 +71,7 @@ export default function Home() {
             </button>
             <button
               onClick={() => setFilterType('available')}
-              className={`px-5 py-3 rounded-xl font-bold text-sm transition-all ${
+              className={`hover:cursor-pointer px-5 py-3 rounded-xl font-bold text-sm transition-all ${
                 filterType === 'available'
                   ? 'bg-blue-600 text-white shadow-sm'
                   : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'

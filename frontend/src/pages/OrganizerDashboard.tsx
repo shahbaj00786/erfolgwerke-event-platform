@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
+import { exportEventsToCSV } from '../services/csvService';
 
 const StatCard = ({ title, value, icon, subtitle }: any) => (
   <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between hover:shadow-md transition-shadow">
@@ -56,6 +57,20 @@ export default function OrganizerData() {
           <h1 className="text-3xl font-extrabold text-gray-900">Analytics Dashboard</h1>
           <p className="text-gray-500 mt-2">Track your event performance and audience reach.</p>
         </div>
+
+        {/* CSV */}
+       <div className="flex justify-between items-center mb-6">
+        <button
+          onClick={() => exportEventsToCSV(events)}
+          className="hover:cursor-pointer flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition-all"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+          </svg>
+          Export CSV
+        </button>
+      </div> 
+
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard title="Total Events" value={stats.total} icon="📅" subtitle="Hosted so far" />
