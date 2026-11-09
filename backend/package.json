@@ -24,7 +24,6 @@
     "typescript": "^7.0.2"
   },
   "name": "backend",
-  "type": "module",
   "scripts": {
     "postinstall": "prisma skills sync || exit 0",
     "dev": "tsx watch server.ts",
