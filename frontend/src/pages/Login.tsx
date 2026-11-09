@@ -22,7 +22,7 @@ export default function Login() {
     }
   }, [location.pathname]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+ const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const endpoint = isLogin ? '/auth/login' : '/auth/signup'; 
@@ -32,20 +32,17 @@ export default function Login() {
 
       const response = await api.post(endpoint, payload);
 
-        if (response.data.success || response.data.token) {
-            const userRole = (response.data.user?.role || response.data.role || role).toUpperCase();
-          
-            login(response.data.token, userRole, response.data.user);
-            
-            if (response.data.user) {
-              setUser(response.data.user);
-            }
-          
-            if (userRole === 'ORGANIZER') {
-              navigate('/dashboard');
-            } else {
-              navigate('/');
-            }
+      if (response.data.success || response.data.token) {
+        const userRole = (response.data.user?.role || response.data.role || role).toUpperCase();
+        
+        login(response.data.token, userRole, response.data.user);
+        
+        if (response.data.user) {
+          setUser(response.data.user);
+        }
+        
+        if (userRole === 'ORGANIZER') {
+          navigate('/dashboard');
         } else {
           navigate('/');
         }
